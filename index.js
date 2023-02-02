@@ -1,14 +1,26 @@
+// imports
+const express = require('express')
 const http = require('http')
+const { Server } = require('socket.io')
 
-const hostname = '127.0.0.1'
+// variables
 const port = 3000
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200
-  res.setHeader('Content-Type', 'text/plain')
-  res.end('Hello World\n')
+// routes
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html')
 })
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`)
+io.on('connection', (socket) => {
+  console.log('user connected')
+  socket.on('chat message', (msg) => {
+    io.emit('chat message', msg)
+  })
+})
+
+server.listen(port, () => {
+  console.log(`Listen port:${port}`)
 })

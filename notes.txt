@@ -1,0 +1,3 @@
+server-client duplex connection
+  - socket.io -> websocket
+  https://socket.io/get-started/chat
