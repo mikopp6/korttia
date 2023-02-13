@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/mikopp6/korttia#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "socket.io": "^4.5.4"
   },

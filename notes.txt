@@ -1,3 +1,9 @@
 server-client duplex connection
   - socket.io -> websocket
   https://socket.io/get-started/chat
+
+
+loosely based on chat app https://novu.co/blog/building-a-chat-app-with-socket-io-and-react/
+
+todo:
+confirm messages received

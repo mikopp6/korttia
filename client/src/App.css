@@ -1,0 +1,14 @@
+
+
+.game {
+  order: 1;
+  flex: 3 1 80%;
+  align-self: auto;
+  background-color: #00000083;
+  color: #000000;
+  border: 2px solid #6D6D6D;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 5px;
+  }
+
