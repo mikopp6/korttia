@@ -9,8 +9,8 @@ const RoomList = ({ socket, room, setRoom }) => {
   const handleNewRoom = (e) => {
     e.preventDefault()
     if (newRoomName.trim() && localStorage.getItem('userName')) {
-      socket.emit('newRoom', {
-        roomName: newRoomName,
+      socket.emit('joinRoom', {
+        roomname: newRoomName,
         host: localStorage.getItem('userName'),
         id: `${socket.id}${Math.random()}`,
         socketID: socket.id
@@ -20,29 +20,23 @@ const RoomList = ({ socket, room, setRoom }) => {
   }
 
   const handleGetAllRooms = () => {
-    socket.emit('listRooms')
+    socket.emit('listrooms')
   }
 
   const handleJoinRoom = (room) => {
     if (localStorage.getItem('userName')) {
       socket.emit('joinRoom', {
-        roomName: room.roomName,
-        socketID: socket.id
-      })
-    }
-  }
-  const handleDeleteRoom = (room) => {
-    if (localStorage.getItem('userName')) {
-      socket.emit('deleteRoom', {
-        roomName: room.roomName,
-        socketID: socket.id
+        roomname: room.roomname,
+        host: room.host,
+        id: room.id
       })
     }
   }
 
   useEffect(() => {
-    socket.on('roomListResponse', (response) => setRooms(response))
-  }, [socket, rooms])
+    socket.on('rooms', (rooms) => setRooms((rooms)))
+  })
+
 
   useEffect(() => {
     socket.on('createRoomResponse', (response) => setRooms(response))
@@ -52,7 +46,7 @@ const RoomList = ({ socket, room, setRoom }) => {
     socket.on('joinRoomResponse', (response) => {
       if(response.allowed === true)
       {
-        setRoom(response.roomName)
+        setRoom(response)
       }
     })
   }, [socket, setRoom])
@@ -69,8 +63,8 @@ const RoomList = ({ socket, room, setRoom }) => {
           <h2 className="room_list">Here are the rooms!</h2>
           {rooms.map((room) => (
             <div className="single_room" key={room.id}>
-              <p>{room.roomName}</p>
-              <button onClick={() => handleDeleteRoom(room)} className="joinBtn">delete</button>
+              <p>Room: {room.roomname}</p>
+              <p>Host: {room.host}</p>
               <button onClick={() => handleJoinRoom(room)} className="joinBtn">join</button>
             </div>
           ))}

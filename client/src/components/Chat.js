@@ -33,8 +33,12 @@ const Chat = ({ username, socket }) => {
   }
 
   useEffect(() => {
-    socket.on('newUserResponse', (data) => setUsers(data))
-  }, [socket, users])
+    socket.on('users', (users) => setUsers((users)))
+  })
+
+  useEffect(() => {
+    socket.on("user connected", (user) => setUsers([...users, user]))
+  })
 
   useEffect(() => {
     socket.on('messageResponse', (data) => setMessages([...messages, data]))
@@ -50,9 +54,12 @@ const Chat = ({ username, socket }) => {
         ?
         <div >
           <h2 className="home_header">Welcome {username}</h2>
+          <h4 className="chat__header">Active users: </h4>
           <div className="chat__users">
             {users.map((user) => (
-              <p key={user.socketID}>{user.userName}</p>
+              <div key={user.userID}>
+                <p>{user.username}</p>
+              </div>
             ))}
           </div>
           <div className="chat__main">

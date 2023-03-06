@@ -22,8 +22,6 @@ const Game = ({ username, setUsername, room, setRoom, socket }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    localStorage.setItem('userName', proposedUsername)
-    socket.emit('newUser', { username: proposedUsername, socketID: socket.id })
     setUsername(proposedUsername)
   }
 

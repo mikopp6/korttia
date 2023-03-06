@@ -3,63 +3,58 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 const cors = require('cors')
-const socketIO = require('socket.io')(http, {cors: {origin: "http://localhost:3000"}})
+const io = require('socket.io')(http, {cors: {origin: "http://localhost:3000"}})
 
 const PORT = 4000
 
 app.use(cors())
 
-let users = []
 
-let rooms = []
+io.use((socket, next) => {
+  const username = socket.handshake.auth.username
+  if(!username) {
+    return next(new Error("invalid username"))
+  }
+  socket.username = username
+  next()
+})
 
-socketIO.on('connection', (socket) => {
-  // console.log(`${socket.id} connected`)
+io.on('connection', (socket) => {
+  
+  const users = getAllUsers()
+  socket.emit('users', users)
+  const rooms = getAllRooms()
+  socket.emit('rooms', rooms)
+  
+
+
+  socket.broadcast.emit("user connected", {
+    userID: socket.id,
+    username: socket.username
+  })
 
   socket.on('message', (data) => {
-    socketIO.emit('messageResponse', data)
+    io.emit('messageResponse', data)
   })
 
-  socket.on('newUser', (data) => {
-    users.push(data)
-    socketIO.emit('newUserResponse', users)
-    console.log(`User: ${data.username} created!`)
-    socketIO.emit('roomListResponse', rooms)
+  socket.on('listrooms', (_data) => {
+    socket.emit('rooms', getAllRooms())
   })
 
-  socket.on('newRoom', (data) => {
-    rooms.push(data)
-    console.log(`Room: ${data.roomName} created!`)
-    socketIO.emit('createRoomResponse', rooms)
-  })
-
-  socket.on('deleteRoom', (data) => {
-    const index = rooms.findIndex(room => room.roomName === data.roomName)
-    if(index != -1)
-    {
-      rooms.splice(index, 1)
-      console.log(`Room: ${data.roomName} deleted!`)
-    }
-    socketIO.emit('roomListResponse', rooms)
-  })
-
-  socket.on('listRooms', (_data) => {
-    socketIO.emit('roomListResponse', rooms)
-  })
 
   socket.on('joinRoom', (data) => {
-    socket.join(data.roomName)
+    socket.join(data.roomname + "?" + data.host + "?" + data.id)
     let response = {...data, allowed: true}
     if (!true)
     {
       response.allowed = false
     }
-    socketIO.emit('joinRoomResponse', response)
+    io.emit('joinRoomResponse', response)
   })
 
   socket.on('leaveRoom', (data) => {
-    socket.leave(data.roomName)
-    socketIO.emit('leaveRoomResponse')
+    socket.leave(data.roomname + "?" + data.host + "?" + data.id)
+    io.emit('leaveRoomResponse')
   })
 
   socket.on('disconnect', () => {
@@ -70,10 +65,33 @@ socketIO.on('connection', (socket) => {
       console.log(`User: ${users[index].username} deleted!`)
       users.splice(index, 1)
     }
-    socketIO.emit('newUserResponse', users)
+    io.emit('newUserResponse', users)
     socket.disconnect()
   })
 })
+
+const getAllRooms = () => {
+  const rooms = []
+  io.of("/").adapter.rooms.forEach((sockets, room) => {
+    const isPrivate = sockets.size === 1 && sockets.has(room);
+    if (!isPrivate) {
+      const [roomname, host, id] = room.split('?')
+      rooms.push({roomname: roomname, host: host, id: id});
+    }
+  })
+  return rooms
+}
+
+const getAllUsers = () => {
+  const users = []
+  for(let [id, socket] of io.of('/').sockets) {
+    users.push({
+      userID: id,
+      username: socket.username
+    })
+  }
+  return users
+}
 
 
 // routes
