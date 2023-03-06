@@ -1,5 +1,6 @@
 import { useState } from "react"
 import RoomList from './RoomList'
+import RoomLobby from './RoomLobby'
 
 
 const gameContainerStyle = {
@@ -16,7 +17,7 @@ const gameContainerStyle = {
 
 
 
-const Game = ({ username, setUsername, socket }) => {
+const Game = ({ username, setUsername, room, setRoom, socket }) => {
   const [proposedUsername, setProposedUsername] = useState('')
 
   const handleSubmit = (e) => {
@@ -32,8 +33,12 @@ const Game = ({ username, setUsername, socket }) => {
         ?
         <div>
           <h2 className="home_header">Welcome {username}</h2>
-          <RoomList socket={socket}/>
-          <button className="home__cta" onClick={() => setUsername('')}>Change username</button>
+          {room !== ''
+          ?
+            <RoomLobby socket={socket} room={room} setRoom={setRoom}/>
+          :
+            <RoomList socket={socket} room={room} setRoom={setRoom}/>
+          }
         </div>
         :
         <form className="home__container" onSubmit={handleSubmit}>

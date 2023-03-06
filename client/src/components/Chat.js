@@ -50,14 +50,13 @@ const Chat = ({ username, socket }) => {
         ?
         <div >
           <h2 className="home_header">Welcome {username}</h2>
-          <h4 className="chat__header">ACTIVE USERS</h4>
           <div className="chat__users">
             {users.map((user) => (
               <p key={user.socketID}>{user.userName}</p>
             ))}
           </div>
           <div className="chat__main">
-          <header className="chat__mainHeader">Chat for room: 2053placeholder</header>
+          <header className="chat__mainHeader">Global chat</header>
           <div className="message__container">
             {messages.map((message) => 
               message.name === localStorage.getItem('userName') ? (

@@ -1,36 +1,77 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-const roomListContainerStyle = {
-  order: '2',
-  flex: '1 1 80%',
-  alignSelf: 'auto',
-  backgroundColor: '#CCCCCC',
-  color: '#000000',
-  border: '2px solid #6D6D6D',
-  borderRadius: '10px',
-  padding: '5px',
-  margin: '5px',
-}
 
-const RoomList = ({ socket }) => {
+
+const RoomList = ({ socket, room, setRoom }) => {
   const [rooms, setRooms] = useState([])
   const [newRoomName, setNewRoomName] = useState('')
 
   const handleNewRoom = (e) => {
     e.preventDefault()
-    console.log(newRoomName)
+    if (newRoomName.trim() && localStorage.getItem('userName')) {
+      socket.emit('newRoom', {
+        roomName: newRoomName,
+        host: localStorage.getItem('userName'),
+        id: `${socket.id}${Math.random()}`,
+        socketID: socket.id
+      })
+    }
+    setNewRoomName('')
   }
 
+  const handleGetAllRooms = () => {
+    socket.emit('listRooms')
+  }
+
+  const handleJoinRoom = (room) => {
+    if (localStorage.getItem('userName')) {
+      socket.emit('joinRoom', {
+        roomName: room.roomName,
+        socketID: socket.id
+      })
+    }
+  }
+  const handleDeleteRoom = (room) => {
+    if (localStorage.getItem('userName')) {
+      socket.emit('deleteRoom', {
+        roomName: room.roomName,
+        socketID: socket.id
+      })
+    }
+  }
+
+  useEffect(() => {
+    socket.on('roomListResponse', (response) => setRooms(response))
+  }, [socket, rooms])
+
+  useEffect(() => {
+    socket.on('createRoomResponse', (response) => setRooms(response))
+  }, [socket, rooms])
+
+  useEffect(() => {
+    socket.on('joinRoomResponse', (response) => {
+      if(response.allowed === true)
+      {
+        setRoom(response.roomName)
+      }
+    })
+  }, [socket, setRoom])
+
   return (
-    <div style={roomListContainerStyle}>
+    <div className='room_list_container'>
+      <button className='joinBtn' onClick={handleGetAllRooms}>Get</button>
       {rooms.length === 0 ? (
-        <h2 className="home__header">No rooms yet, create one!</h2>
+        <div>
+          <h2 className="home__header">No rooms yet, create one!</h2>
+        </div>
       ) : (
         <div>
-          <h2 className="home__header">Here are the rooms!</h2>
+          <h2 className="room_list">Here are the rooms!</h2>
           {rooms.map((room) => (
-            <div className="message__sender">
-              <p>{room.name}</p>
+            <div className="single_room" key={room.id}>
+              <p>{room.roomName}</p>
+              <button onClick={() => handleDeleteRoom(room)} className="joinBtn">delete</button>
+              <button onClick={() => handleJoinRoom(room)} className="joinBtn">join</button>
             </div>
           ))}
         </div>

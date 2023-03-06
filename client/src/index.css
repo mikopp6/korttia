@@ -23,7 +23,7 @@ code {
 
 .home__container {
   width: 100%;
-  height: 100vh;
+  height: 40vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -35,6 +35,10 @@ code {
 }
 
 .home__header {
+  margin-bottom: 30px;
+}
+
+.room_list {
   margin-bottom: 30px;
 }
 
@@ -57,7 +61,7 @@ code {
 
 .chat {
   width: 100%;
-  height: 100vh;
+  height: 40vh;
   display: flex;
   align-items: center;
 }
@@ -93,7 +97,7 @@ code {
 
 .chat__mainHeader {
   width: 100%;
-  height: 10vh;
+  height: 3vh;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,7 +117,7 @@ code {
 
 .message__container {
   width: 100%;
-  height: 80vh;
+  height: 40vh;
   background-color: #fff;
   padding: 20px;
   overflow-y: scroll;
@@ -157,6 +161,18 @@ code {
   cursor: pointer;
 }
 
+.joinBtn {
+  width: 60px;
+  height: 40px;
+  background-color: rgb(63, 131, 255);
+  padding: 10px;
+  margin-left: 10px;
+  border: none;
+  outline: none;
+  color: #eae3d2;
+  cursor: pointer;
+}
+
 .sendBtn:hover {
   background-color: rgb(129, 201, 129);
 }
@@ -180,6 +196,30 @@ code {
 
 .message__chats > p {
   font-size: 13px;
+}
+
+.single_room {
+  display: flex;
+  justify-content: space-between;
+  border: 2px solid #000000;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 25px;
+  flex-direction: row;
+}
+
+.room_list_container {
+  order: 2;
+  display: flex;
+  flex: 1 1 80%;
+  flex-direction: column;
+  align-self: auto;
+  background-color: #CCCCCC;
+  color: #000000;
+  border: 2px solid #6D6D6D;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 5px;
 }
 
 .sender__name {
