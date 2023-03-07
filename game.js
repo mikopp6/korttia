@@ -1,12 +1,9 @@
-
-
 class Card {
   constructor(value, suit) {
     this.value = value
     this.suit = suit
   }
 }
-
 
 class Deck {
   constructor() {
@@ -61,6 +58,12 @@ class Hand {
   }
 }
 
+module.exports = {
+  Hand,
+  Card,
+  Deck
+}
+
 const mydeck = new Deck()
 
 mydeck.shuffle()
@@ -68,3 +71,4 @@ mydeck.shuffle()
 const myhand = new Hand()
 myhand.lift_cards(mydeck, 5, "top")
 console.log(myhand)
+console.log(mydeck.deck.length)

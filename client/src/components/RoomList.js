@@ -9,12 +9,7 @@ const RoomList = ({ socket, room, setRoom }) => {
   const handleNewRoom = (e) => {
     e.preventDefault()
     if (newRoomName.trim() && localStorage.getItem('username')) {
-      socket.emit('joinRoom', {
-        roomname: newRoomName,
-        host: localStorage.getItem('username'),
-        id: `${socket.id}${Math.random()}`,
-        socketID: socket.id
-      })
+      socket.emit('joinRoom', newRoomName)
     }
     setNewRoomName('')
   }
@@ -25,11 +20,7 @@ const RoomList = ({ socket, room, setRoom }) => {
 
   const handleJoinRoom = (room) => {
     if (localStorage.getItem('username')) {
-      socket.emit('joinRoom', {
-        roomname: room.roomname,
-        host: room.host,
-        id: room.id
-      })
+      socket.emit('joinRoom', room)
     }
   }
 
@@ -61,11 +52,10 @@ const RoomList = ({ socket, room, setRoom }) => {
       ) : (
         <div>
           <h2 className="room_list">Here are the rooms!</h2>
-          {rooms.map((room) => (
-            <div className="single_room" key={room.id}>
-              <p>Room: {room.roomname}</p>
-              <p>Host: {room.host}</p>
-              <button onClick={() => handleJoinRoom(room)} className="joinBtn">join</button>
+          {rooms.map((singleRoom) => (
+            <div className="single_room" key={singleRoom}>
+              <p>Room: {singleRoom}</p>
+              <button onClick={() => handleJoinRoom(singleRoom)} className="joinBtn">join</button>
             </div>
           ))}
         </div>

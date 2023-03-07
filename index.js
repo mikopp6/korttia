@@ -14,6 +14,9 @@ const randomId = () => crypto.randomBytes(8).toString("hex");
 const { InMemorySessionStore } = require("./sessionStore")
 const sessionStore = new InMemorySessionStore()
 
+
+const { Card, Deck, Hand } = require("./game")
+
 io.use((socket, next) => {
   // check for existing session
   const sessionID = socket.handshake.auth.sessionID
@@ -67,12 +70,14 @@ io.on('connection', (socket) => {
   socket.on('message', (data) => {
     if (data.room)
     {
-      console.log("to room " + data.room.roomname)
-      io.to(data.room.roomname).emit('messageResponse', data)
+      console.log("to room " + data.room)
+      io.to(data.room).emit('messageResponse', data)
     }
     else
     {
-      io.emit('messageResponse', data)
+      const exceptRooms = getAllRooms()
+      console.log(exceptRooms)
+      io.except([getAllRooms()]).emit('messageResponse', data)
     }
   })
 
@@ -81,17 +86,12 @@ io.on('connection', (socket) => {
   })
 
   socket.on('joinRoom', (data) => {
-    socket.join(data.roomname)
-    let response = {...data, allowed: true}
-    if (!true)
-    {
-      response.allowed = false
-    }
-    socket.emit('joinRoomResponse', response)
+    socket.join(data)
+    socket.emit('joinRoomResponse', data)
   })
 
   socket.on('leaveRoom', (data) => {
-    socket.leave(data.roomname)
+    socket.leave(data)
     socket.emit('leaveRoomResponse')
   })
 
@@ -109,15 +109,53 @@ io.on('connection', (socket) => {
       })
     }
   })
+
+
+  // game logic stuff
+
+  
+  // answer request with list of possible games and their possible rules, like playercount and time
+  socket.on("gameMenu", (data) => {
+    io.to(data.room).emit(rules)
+  })
+
+  // answer game start request by sending game start information
+  socket.on("startGame", (data) => {
+    // got start from client
+    // Figure out stuff from request
+    // const gameType = data.gameType
+    // const additionalOptions = data.additionalOptions
+    // const playerCount = data.playerCount
+    
+    gameData = getNewGameData(data)
+
+    // get players in room
+    const players = io.sockets.adapter.rooms.get(data.room)
+    
+    // tell everyone that the game has started, and send non-secret info (like deck size)
+    io.to(data.room).emit(gameData.deck.deck.length)
+
+    // send every player their hands separately
+    for (const playerId of players)
+    {
+      const clientSocket = io.socket.sockets.get(playerId)
+      clientSocket.emit()
+    }
+
+  })
+
+
 })
+
+
+
 
 const getAllRooms = () => {
   const rooms = []
   io.of("/").adapter.rooms.forEach((sockets, room) => {
     const isPrivate = sockets.size === 1 && sockets.has(room);
     if (!isPrivate) {
-      const [roomname, host, id] = room.split('?')
-      rooms.push({roomname: roomname, host: host, id: id});
+      rooms.push(room);
     }
   })
   return rooms
@@ -132,6 +170,26 @@ const getAllUsers = () => {
     })
   }
   return users
+}
+
+const getNewGameData = (gamedata) => {
+  switch (gamedata.gametype) {
+    case "katko":
+      return getNewKatkoGameData(gamedata)  
+    default:
+      break;
+  }
+}
+
+const getNewKatkoGameData = (gamedata) => {
+  const deck = new Deck()
+  const hand1 = new Hand()
+  const hand2 = new Hand()
+  deck.shuffle()
+  hand1.lift_cards(gamedata.deck, 5, "top")
+  hand2.lift_cards(gamedata.deck, 5, "top")
+
+  return {deck, hand1, hand2}
 }
 
 
