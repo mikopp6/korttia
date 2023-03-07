@@ -87,12 +87,12 @@ io.on('connection', (socket) => {
     {
       response.allowed = false
     }
-    io.emit('joinRoomResponse', response)
+    socket.emit('joinRoomResponse', response)
   })
 
   socket.on('leaveRoom', (data) => {
     socket.leave(data.roomname)
-    io.emit('leaveRoomResponse')
+    socket.emit('leaveRoomResponse')
   })
 
   socket.on("disconnect", async () => {
