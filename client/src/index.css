@@ -80,11 +80,10 @@ code {
 }
 
 .chat__header {
-  margin: 30px 0 20px 0;
+  margin: 30px 0 0 0;
 }
 
 .chat__users > * {
-  margin-bottom: 10px;
   color: #607eaa;
   font-size: 14px;
 }
@@ -231,4 +230,27 @@ code {
   bottom: 50px;
   font-size: 13px;
   font-style: italic;
+}
+
+.green_dot {
+  height: 25px;
+  width: 25px;
+  background-color: rgb(50, 250, 0);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.red_dot {
+  height: 25px;
+  width: 25px;
+  background-color: rgb(248, 4, 4);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.row {
+  display: flex;
+  padding-left: 1%;
 }

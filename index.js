@@ -8,42 +8,80 @@ const io = require('socket.io')(http, {cors: {origin: "http://localhost:3000"}})
 const PORT = 4000
 
 app.use(cors())
+const crypto = require("crypto");
+const randomId = () => crypto.randomBytes(8).toString("hex");
 
+const { InMemorySessionStore } = require("./sessionStore")
+const sessionStore = new InMemorySessionStore()
 
 io.use((socket, next) => {
+  // check for existing session
+  const sessionID = socket.handshake.auth.sessionID
+  if (sessionID) {
+    const session = sessionStore.findSession(sessionID)
+    if (session) {
+      // found existing
+      socket.sessionID = sessionID
+      socket.userID = session.userID
+      socket.username = session.username
+      return next()
+    }
+  }
+
+  // creating new session
   const username = socket.handshake.auth.username
   if(!username) {
     return next(new Error("invalid username"))
   }
+
+  socket.sessionID = randomId()
+  socket.userID = randomId()
   socket.username = username
   next()
 })
 
 io.on('connection', (socket) => {
-  
+  sessionStore.saveSession(socket.sessionID, {
+    userID: socket.userID,
+    username: socket.username,
+    connected: true
+  })
+
+  socket.emit("session", {
+    sessionID: socket.sessionID,
+    userID: socket.userID
+  })
+
   const users = getAllUsers()
   socket.emit('users', users)
   const rooms = getAllRooms()
   socket.emit('rooms', rooms)
-  
 
-
-  socket.broadcast.emit("user connected", {
-    userID: socket.id,
-    username: socket.username
+  socket.onAny((event, ...args) => {
+    console.log("onAny:" + event, args)
   })
 
+
+  socket.broadcast.emit("users", users)
+
   socket.on('message', (data) => {
-    io.emit('messageResponse', data)
+    if (data.room)
+    {
+      console.log("to room " + data.room.roomname)
+      io.to(data.room.roomname).emit('messageResponse', data)
+    }
+    else
+    {
+      io.emit('messageResponse', data)
+    }
   })
 
   socket.on('listrooms', (_data) => {
     socket.emit('rooms', getAllRooms())
   })
 
-
   socket.on('joinRoom', (data) => {
-    socket.join(data.roomname + "?" + data.host + "?" + data.id)
+    socket.join(data.roomname)
     let response = {...data, allowed: true}
     if (!true)
     {
@@ -53,20 +91,23 @@ io.on('connection', (socket) => {
   })
 
   socket.on('leaveRoom', (data) => {
-    socket.leave(data.roomname + "?" + data.host + "?" + data.id)
+    socket.leave(data.roomname)
     io.emit('leaveRoomResponse')
   })
 
-  socket.on('disconnect', () => {
-    // console.log(`${socket.id} disconnected`)
-    const index = users.findIndex(user => user.socketID === socket.id)
-    if(index != -1)
-    {
-      console.log(`User: ${users[index].username} deleted!`)
-      users.splice(index, 1)
+  socket.on("disconnect", async () => {
+    const matchingSockets = await io.in(socket.userID).allSockets()
+    const isDisconnected = matchingSockets.size === 0
+    if (isDisconnected) {
+      // notify other users
+      socket.broadcast.emit("users", users)
+      // update the connection status of the session
+      sessionStore.saveSession(socket.sessionID, {
+        userID: socket.userID,
+        username: socket.username,
+        connected: false,
+      })
     }
-    io.emit('newUserResponse', users)
-    socket.disconnect()
   })
 })
 

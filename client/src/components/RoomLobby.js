@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 const RoomLobby = ({ socket, room, setRoom }) => {
   
   const handleLeave = () => {
-    if (localStorage.getItem('userName')) {
+    if (localStorage.getItem('username')) {
       socket.emit('leaveRoom', {
         roomname: room.roomname,
         host: room.host,

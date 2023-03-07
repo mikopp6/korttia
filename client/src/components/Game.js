@@ -17,7 +17,7 @@ const gameContainerStyle = {
 
 
 
-const Game = ({ username, setUsername, room, setRoom, socket }) => {
+const Game = ({ username, setUsername, room, setRoom, socket, connected }) => {
   const [proposedUsername, setProposedUsername] = useState('')
 
   const handleSubmit = (e) => {
@@ -30,7 +30,13 @@ const Game = ({ username, setUsername, room, setRoom, socket }) => {
       {username !== ''
         ?
         <div>
-          <h2 className="home_header">Welcome {username}</h2>
+          <div className="row">
+            {connected
+            ? <span className="green_dot"></span>
+            : <span className="red_dot"></span>
+            }
+            <p>{username}</p>
+          </div>
           {room !== ''
           ?
             <RoomLobby socket={socket} room={room} setRoom={setRoom}/>

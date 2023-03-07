@@ -13,7 +13,7 @@ const chatContainerStyle = {
   margin: '5px',
 }
 
-const Chat = ({ username, socket }) => {
+const Chat = ({ username, socket, room, connected }) => {
   const [messages, setMessages] = useState([])
   const [message, setMessage] = useState('')
   const lastMessageRef = useRef(null)
@@ -21,12 +21,13 @@ const Chat = ({ username, socket }) => {
 
   const handleSendMessage = (e) => {
     e.preventDefault()
-    if (message.trim() && localStorage.getItem('userName')) {
+    if (message.trim() && localStorage.getItem('username')) {      
       socket.emit('message', {
         text: message,
-        name: localStorage.getItem('userName'),
+        name: localStorage.getItem('username'),
         id: `${socket.id}${Math.random()}`,
-        socketID: socket.id
+        socketID: socket.id,
+        room: room
       })
     }
     setMessage('')
@@ -41,7 +42,10 @@ const Chat = ({ username, socket }) => {
   })
 
   useEffect(() => {
-    socket.on('messageResponse', (data) => setMessages([...messages, data]))
+    socket.on('messageResponse', (data) => {
+      console.log("got message " + data)
+      setMessages([...messages, data])
+    })
   }, [socket, messages])
 
   useEffect(() => {
@@ -53,7 +57,13 @@ const Chat = ({ username, socket }) => {
       {username !== ''
         ?
         <div >
-          <h2 className="home_header">Welcome {username}</h2>
+          <div className="row">
+            {connected
+            ? <span className="green_dot"></span>
+            : <span className="red_dot"></span>
+            }
+            <p>{username}</p>
+          </div>
           <h4 className="chat__header">Active users: </h4>
           <div className="chat__users">
             {users.map((user) => (
@@ -63,10 +73,13 @@ const Chat = ({ username, socket }) => {
             ))}
           </div>
           <div className="chat__main">
-          <header className="chat__mainHeader">Global chat</header>
+          {room
+          ? <header className="chat__mainHeader">{room.roomname} chat</header>
+          : <header className="chat__mainHeader">Global chat</header>
+          }
           <div className="message__container">
             {messages.map((message) => 
-              message.name === localStorage.getItem('userName') ? (
+              message.name === localStorage.getItem('username') ? (
                 <div className="message__chats" key={message.id}>
                   <p className="sender__name">You</p>
                   <div className="message__sender">

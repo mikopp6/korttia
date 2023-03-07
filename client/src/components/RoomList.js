@@ -8,10 +8,10 @@ const RoomList = ({ socket, room, setRoom }) => {
 
   const handleNewRoom = (e) => {
     e.preventDefault()
-    if (newRoomName.trim() && localStorage.getItem('userName')) {
+    if (newRoomName.trim() && localStorage.getItem('username')) {
       socket.emit('joinRoom', {
         roomname: newRoomName,
-        host: localStorage.getItem('userName'),
+        host: localStorage.getItem('username'),
         id: `${socket.id}${Math.random()}`,
         socketID: socket.id
       })
@@ -24,7 +24,7 @@ const RoomList = ({ socket, room, setRoom }) => {
   }
 
   const handleJoinRoom = (room) => {
-    if (localStorage.getItem('userName')) {
+    if (localStorage.getItem('username')) {
       socket.emit('joinRoom', {
         roomname: room.roomname,
         host: room.host,
