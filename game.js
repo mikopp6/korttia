@@ -3,6 +3,7 @@ class Card {
     this.value = value
     this.suit = suit
     this.fullvalue = value+suit
+    this.hidden = true
   }
 }
 

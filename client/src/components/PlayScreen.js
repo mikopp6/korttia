@@ -1,36 +1,32 @@
 import React, { useEffect, useState } from 'react'
 
-const PlayScreen = ({ socket }) => {
+const PlayScreen = ({ socket, initialGameData }) => {
   
-  const [gamedata, setGamedata] = useState([])
+  const [onGoingDealData, setOngoingDealData] = useState(null)
+
+  const handleDeal = () => {
+    socket.emit("dealGame", initialGameData.gameID)
+  }
 
   useEffect(() => {
-    socket.on('sendGamedata', (data) => {
-      setGamedata(data)
+    socket.on('dealGameResponse', (data) => {
+      setOngoingDealData(data)
     })
-  }, [socket, setGamedata])
+  }, [socket])
 
   return (
     <div>
-      {gamedata.length !== 0
+      <p>Game: {initialGameData.gameType}</p>
+      <p>Players: {initialGameData.playerCount}</p>
+      <p>Deck: {initialGameData.deck.deck.length}</p>
+      {onGoingDealData
       ? <div>
-          <p>Game: {gamedata.gamename}</p>
-          <p>Players: {gamedata.playerCount}</p>
-          <p>Decksize: {gamedata.deckSize}</p>
-          <p>Turn: {gamedata.turn}</p>
-          {gamedata.hands.map((hand) => (
-            <div  key={hand}>
-              <p>Handsize: {hand.hand.length}</p>
-              
-              {hand.hand.map((card) => (
-                <div  key={card}>
-                  <p>Card value: {card.fullvalue}</p>
-                </div>
-              ))}
-            </div>
-          ))}
+          <p>dealt!</p>
         </div>
-      : <p>Waiting for gamedata</p>
+      : <div>
+          <button onClick={handleDeal}>Deal</button>
+          <p>waiting for cards to be dealt</p>
+        </div>
       }
     </div>
   )

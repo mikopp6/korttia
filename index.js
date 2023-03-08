@@ -15,7 +15,12 @@ const { InMemorySessionStore } = require("./sessionStore")
 const sessionStore = new InMemorySessionStore()
 
 
+const { InMemoryGameStore } = require("./gameStore")
+const gameStore = new InMemoryGameStore()
+
+
 const { Card, Deck, Hand } = require("./game")
+const { getMaxListeners } = require('process')
 
 io.use((socket, next) => {
   // check for existing session
@@ -110,60 +115,66 @@ io.on('connection', (socket) => {
     }
   })
 
-
+  // !!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!
   // game logic stuff
+  // !!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!
 
-  
-  // answer request with list of possible games and their possible rules, like playercount and time
-  socket.on("gameMenu", (data) => {
-    io.to(data.room).emit(rules)
-  })
-
-  // answer game start request by sending game start information
+  // Get room info & start game
   socket.on("startGame", (data) => {
-    // got start from client
-    // Figure out stuff from request
-    // const gameType = data.gameType
-    // const additionalOptions = data.additionalOptions
     
-    // gameData = getNewGameData(data)
-    
-    // get players in room
+    const gameID = data.room
+    const gameType = data.game
     const players = io.sockets.adapter.rooms.get(data.room)
     const playerCount = players ? players.size : 0;
-    console.log("players: " + players)
-    console.log("playerCount: " + playerCount)
-    
-    // create deck
-    const deck = new Deck()
-    
-    // tell everyone that the game has started, and send non-secret info (like deck size)
-    io.to(data.room).emit("startResponse", deck.deck.length)
+    const deck = new Deck
 
-    const hands = []
-    for (const playerId of players)
-    {
-      const hand = new Hand()
-      hand.lift_cards(deck, 5, "top")
-      hands.push(hand)
+    const gameData = {
+      gameID: gameID,
+      gameType: gameType,
+      players: players,
+      playerCount: playerCount,
+      deck: deck
     }
+    gameStore.saveGame(gameID, gameData)
+    
+    // TODO Remove values before sending
+    // for(const card in gameData.deck.deck)
+    // {
+    //   console.log(card.value)
+    //   card.value = null
+    //   card.suit = null
+    //   card.fullvalue = null
+    // }
 
-    // send every player gamedata separately
-    for (const playerId of players)
-    {
-      const gamedata = {
-        "gamename": "katko",
-        "playerCount": playerCount,
-        "deckSize": (deck.deck.length),
-        "turn": "you",
-        "hands": hands
+    console.log(gameData)
+    io.to(data.room).emit("startGameResponse", gameData)
+  })
+
+  // deal
+  socket.on("dealGame", (gameID) => {
+    // check that game exists
+    if (gameID) {
+      const game = gameStore.findGame(gameID)
+      if (game) {
+        console.log("game from store: " + game)
+
+        // determine who starts
+
+        // respond to dealer
+
+        // respond to everyone else
+
+
+
+
+      } else {
+        console.log("no game in store")
       }
-      const clientSocket = io.sockets.sockets.get(playerId)
-      clientSocket.emit("sendGamedata", gamedata)
+    } else {
+      console.log("no gameID")
     }
-    // tell everyone non-secret info (like deck size)
-    // io.to(data.room).emit("sendGamedata", deck.deck.length)
-
   })
 
 
@@ -194,25 +205,7 @@ const getAllUsers = () => {
   return users
 }
 
-const getNewGameData = (gamedata) => {
-  switch (gamedata.gametype) {
-    case "katko":
-      return getNewKatkoGameData(gamedata)  
-    default:
-      break;
-  }
-}
 
-const getNewKatkoGameData = (gamedata) => {
-  const deck = new Deck()
-  const hand1 = new Hand()
-  const hand2 = new Hand()
-  deck.shuffle()
-  hand1.lift_cards(gamedata.deck, 5, "top")
-  hand2.lift_cards(gamedata.deck, 5, "top")
-
-  return {deck, hand1, hand2}
-}
 
 
 // routes
