@@ -125,22 +125,44 @@ io.on('connection', (socket) => {
     // Figure out stuff from request
     // const gameType = data.gameType
     // const additionalOptions = data.additionalOptions
-    // const playerCount = data.playerCount
     
-    gameData = getNewGameData(data)
-
+    // gameData = getNewGameData(data)
+    
     // get players in room
     const players = io.sockets.adapter.rooms.get(data.room)
+    const playerCount = players ? players.size : 0;
+    console.log("players: " + players)
+    console.log("playerCount: " + playerCount)
+    
+    // create deck
+    const deck = new Deck()
     
     // tell everyone that the game has started, and send non-secret info (like deck size)
-    io.to(data.room).emit(gameData.deck.deck.length)
+    io.to(data.room).emit("startResponse", deck.deck.length)
 
-    // send every player their hands separately
+    const hands = []
     for (const playerId of players)
     {
-      const clientSocket = io.socket.sockets.get(playerId)
-      clientSocket.emit()
+      const hand = new Hand()
+      hand.lift_cards(deck, 5, "top")
+      hands.push(hand)
     }
+
+    // send every player gamedata separately
+    for (const playerId of players)
+    {
+      const gamedata = {
+        "gamename": "katko",
+        "playerCount": playerCount,
+        "deckSize": (deck.deck.length),
+        "turn": "you",
+        "hands": hands
+      }
+      const clientSocket = io.sockets.sockets.get(playerId)
+      clientSocket.emit("sendGamedata", gamedata)
+    }
+    // tell everyone non-secret info (like deck size)
+    // io.to(data.room).emit("sendGamedata", deck.deck.length)
 
   })
 

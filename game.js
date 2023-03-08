@@ -2,6 +2,7 @@ class Card {
   constructor(value, suit) {
     this.value = value
     this.suit = suit
+    this.fullvalue = value+suit
   }
 }
 
@@ -41,20 +42,18 @@ class Deck {
 class Hand {
   constructor(){
     this.hand = []
+    this.hidden = false
   }
   
   lift_cards(deck, amount, method) {
-    var newCards = []
     for (var i = 0; i < amount; i++) {
       var card = deck.lift_card(method)
       if (!card) {
         break
       } else {
-        newCards.push(card)
+        this.hand.push(card)
       }
     }
-    this.hand.push(newCards)
-    return newCards
   }
 }
 
@@ -63,12 +62,3 @@ module.exports = {
   Card,
   Deck
 }
-
-const mydeck = new Deck()
-
-mydeck.shuffle()
-
-const myhand = new Hand()
-myhand.lift_cards(mydeck, 5, "top")
-console.log(myhand)
-console.log(mydeck.deck.length)

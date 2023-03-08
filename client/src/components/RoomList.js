@@ -35,10 +35,7 @@ const RoomList = ({ socket, room, setRoom }) => {
 
   useEffect(() => {
     socket.on('joinRoomResponse', (response) => {
-      if(response.allowed === true)
-      {
-        setRoom(response)
-      }
+      setRoom(response)
     })
   }, [socket, setRoom])
 

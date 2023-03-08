@@ -74,7 +74,7 @@ const Chat = ({ username, socket, room, connected }) => {
           </div>
           <div className="chat__main">
           {room
-          ? <header className="chat__mainHeader">{room.roomname} chat</header>
+          ? <header className="chat__mainHeader">{room} chat</header>
           : <header className="chat__mainHeader">Global chat</header>
           }
           <div className="message__container">
