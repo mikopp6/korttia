@@ -90,14 +90,21 @@ io.on('connection', (socket) => {
     socket.emit('rooms', getAllRooms())
   })
 
+  socket.on('createAndJoinRoom', (data) => {
+    socket.join(data)
+    socket.emit('joinRoomResponse', data)
+    socket.broadcast.emit("rooms", getAllRooms())
+  })
+
   socket.on('joinRoom', (data) => {
     socket.join(data)
     socket.emit('joinRoomResponse', data)
+    socket.broadcast.emit("rooms", getAllRooms())
   })
 
   socket.on('leaveRoom', (data) => {
     socket.leave(data)
-    socket.emit('leaveRoomResponse')
+    socket.emit('rooms', getAllRooms())
   })
 
   socket.on("disconnect", async () => {
@@ -188,7 +195,8 @@ const getAllRooms = () => {
   io.of("/").adapter.rooms.forEach((sockets, room) => {
     const isPrivate = sockets.size === 1 && sockets.has(room);
     if (!isPrivate) {
-      rooms.push(room);
+      const playerCount = getPlayerCountInRoom(room)
+      rooms.push({roomname: room, playerCount: playerCount});
     }
   })
   return rooms
@@ -205,7 +213,21 @@ const getAllUsers = () => {
   return users
 }
 
+const parseRoomInfo = (room) => {
+  const [roomname, host] = room.split('?')
+  return roomname, host
+}
 
+const createRoomInfo = (roomname, host) => {
+  const room = roomname + "?" + host
+  return room
+}
+
+const getPlayerCountInRoom = (room) => {
+  const players = io.sockets.adapter.rooms.get(room)
+  const playerCount = players ? players.size : 0;
+  return playerCount
+}
 
 
 // routes
