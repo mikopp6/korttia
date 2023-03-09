@@ -10,8 +10,8 @@ class Card {
 class Deck {
   constructor() {
     this.deck = []
-    const suits = ["clubs", "diamonds", "hearts", "spades"]
-    const values = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+    const suits = ["c", "d", "h", "s"]
+    const values = [2,3,4,5,6,7,8,9,10,11,12,13,14]
 
     for (var suit of suits) {
       for (var value of values) {
@@ -46,7 +46,7 @@ class Hand {
     this.hidden = false
   }
   
-  lift_cards(deck, amount, method) {
+  lift_cards_from_deck(deck, amount, method) {
     for (var i = 0; i < amount; i++) {
       var card = deck.lift_card(method)
       if (!card) {
@@ -55,6 +55,9 @@ class Hand {
         this.hand.push(card)
       }
     }
+  }
+  remove_card(fullvalue) {
+    return this.hand.splice(this.hand.findIndex(card => card.fullvalue === fullvalue), 1)
   }
 }
 

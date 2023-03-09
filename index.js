@@ -20,7 +20,6 @@ const gameStore = new InMemoryGameStore()
 
 
 const { Card, Deck, Hand } = require("./game")
-const { getMaxListeners } = require('process')
 
 io.use((socket, next) => {
   // check for existing session
@@ -136,13 +135,24 @@ io.on('connection', (socket) => {
     const players = io.sockets.adapter.rooms.get(data.room)
     const playerCount = players ? players.size : 0;
     const deck = new Deck
+    const playpile = new Hand
+
+    const playerList = []
+    for (const playerID of players)
+    {
+      playerList.push({
+        playerID: playerID,
+        wins: 0
+      })
+    }
 
     const gameData = {
       gameID: gameID,
       gameType: gameType,
-      players: players,
+      players: playerList,
       playerCount: playerCount,
-      deck: deck
+      deck: deck,
+      playpile: playpile
     }
     gameStore.saveGame(gameID, gameData)
     
@@ -155,7 +165,6 @@ io.on('connection', (socket) => {
     //   card.fullvalue = null
     // }
 
-    console.log(gameData)
     io.to(data.room).emit("startGameResponse", gameData)
   })
 
@@ -163,19 +172,26 @@ io.on('connection', (socket) => {
   socket.on("dealGame", (gameID) => {
     // check that game exists
     if (gameID) {
-      const game = gameStore.findGame(gameID)
-      if (game) {
-        console.log("game from store: " + game)
+      const gamedata = gameStore.findGame(gameID)
+      if (gamedata) {
+        // shuffle deck
+        gamedata.deck.shuffle()
 
         // determine who starts
+        gamedata.players[0].turn = true
 
-        // respond to dealer
-
-        // respond to everyone else
-
-
-
-
+        // get hands, send visible hand to player, hidden hand to other players
+        for(const [i, player] of gamedata.players.entries()){
+          const newHand = new Hand()
+          newHand.lift_cards_from_deck(gamedata.deck, 5, "top")
+          gamedata.players[i].hand = newHand
+          const playerSocket = io.sockets.sockets.get(player.playerID)
+          // send new hand status to player
+          playerSocket.emit("ownHandUpdate", newHand)
+        }
+        gameStore.saveGame(gamedata.gameID, gamedata)
+        // send new deck status to everyone
+        io.to(gamedata.gameID).emit("deckUpdate", gamedata.deck)
       } else {
         console.log("no game in store")
       }
@@ -185,10 +201,77 @@ io.on('connection', (socket) => {
   })
 
 
+  // receive move
+  socket.on("onMove", (data) => {
+    // check that game exists
+    if (data.gameID) {
+      const gamedata = gameStore.findGame(data.gameID)
+      if (gamedata) {
+        // find playerNumber from gamedata
+        var playerNumber = -1
+        for(const [i, player] of gamedata.players.entries()){
+          if (player.playerID == socket.id){
+            playerNumber = i
+            break;
+          }
+        }
+
+        const [valid, winning] = checkKatkoMove(playpile, gamedata.players[playerNumber].hand, data.playedCard)
+        if(!valid) {
+          socket.emit("invalidMove")
+        } else {
+          // remove card
+          const removedCard = gamedata.players[playerNumber].hand.remove_card(data.playedCard.fullvalue)[0]
+          
+          if(!winning)
+
+          // send new hand status to player
+          socket.emit("ownHandUpdate", gamedata.players[playerNumber].hand)
+          gamedata.playpile.hand.push(removedCard)
+          gameStore.saveGame(gamedata.gameID, gamedata)
+          // send new playpile status to everyone
+          io.to(gamedata.gameID).emit("playpileUpdate", gamedata.playpile)
+        }
+
+      } else {
+        console.log("no game in store")
+      }
+    } else {
+      console.log("no gameID")
+    }
+  })
 })
 
 
+// return two booleans
+// first boolean is if move is valid
+// second boolean is if player is currently winning
+// winning is ultimately determined by going through the playerlist in reverse order, 
+// and getting the first one marked as winner 
+const checkKatkoMove = (playpile, hand, playedCard) => {
+  // empty
+  if (playpile.length != 0) return [true, true]
+  
+  // compare to top card suit and value
+  const playpileTopcard = playpile.hand.slice(-1)
+  if ((playedCard.suit === playpileTopcard.suit) && (playedCard.value > playpileTopcard.value)) return [true, true]
+  if ((playedCard.suit === playpileTopcard.suit) && (playedCard.value < playpileTopcard.value)) return [true, false]
+  
+  // check that player doesnt have same suit in hand
+  for (const card in hand) {
+    if (card !== playedCard && card.suit === playpileTopcard.suit)
+      return [false, false]
+  }
+  return [true, false]
+}
 
+const sendDeckUpdateToAll = (gamestate, room) => {
+  room.emit(gamestate.deck)
+}
+
+const sendPlayPileUpdateToAll = (gamestate, room) => {
+  room.emit(gamestate.playPile)
+}
 
 const getAllRooms = () => {
   const rooms = []
@@ -227,6 +310,11 @@ const getPlayerCountInRoom = (room) => {
   const players = io.sockets.adapter.rooms.get(room)
   const playerCount = players ? players.size : 0;
   return playerCount
+}
+
+const getPlayersInRoom = (room) => {
+  const players = io.sockets.adapter.rooms.get(room)
+  return players
 }
 
 
