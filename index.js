@@ -64,9 +64,6 @@ io.on('connection', (socket) => {
   const rooms = getAllRooms()
   socket.emit('rooms', rooms)
 
-  socket.onAny((event, ...args) => {
-    console.log("onAny:" + event, args)
-  })
 
 
   socket.broadcast.emit("users", users)
@@ -74,13 +71,11 @@ io.on('connection', (socket) => {
   socket.on('message', (data) => {
     if (data.room)
     {
-      console.log("to room " + data.room)
       io.to(data.room).emit('messageResponse', data)
     }
     else
     {
       const exceptRooms = getAllRooms()
-      console.log(exceptRooms)
       io.except([getAllRooms()]).emit('messageResponse', data)
     }
   })
@@ -215,24 +210,64 @@ io.on('connection', (socket) => {
             break;
           }
         }
-
-        const [valid, winning] = checkKatkoMove(playpile, gamedata.players[playerNumber].hand, data.playedCard)
-        if(!valid) {
-          socket.emit("invalidMove")
+        // check turn
+        if (!gamedata.players[playerNumber].turn){
+          socket.emit("notYourTurn")
         } else {
-          // remove card
-          const removedCard = gamedata.players[playerNumber].hand.remove_card(data.playedCard.fullvalue)[0]
-          
-          if(!winning)
+          const [valid, winning] = checkKatkoMove(gamedata.playpile.hand, gamedata.players[playerNumber].hand.hand, data.playedCard)
+          if(!valid) {
+            socket.emit("invalidMove")
+          } else {
+            // remove card
+            const removedCard = gamedata.players[playerNumber].hand.remove_card(data.playedCard.fullvalue)[0]
+            removedCard.playedBy = playerNumber
 
-          // send new hand status to player
-          socket.emit("ownHandUpdate", gamedata.players[playerNumber].hand)
-          gamedata.playpile.hand.push(removedCard)
-          gameStore.saveGame(gamedata.gameID, gamedata)
-          // send new playpile status to everyone
-          io.to(gamedata.gameID).emit("playpileUpdate", gamedata.playpile)
+            // check if currently winning
+            if(winning) removedCard.winning = true
+
+            // send new hand status to player
+            gamedata.players[playerNumber].turn = false
+            gamedata.playpile.hand.push(removedCard)
+            socket.emit("ownHandUpdate", gamedata.players[playerNumber].hand)
+
+            // send new playpile status to everyone
+            io.to(gamedata.gameID).emit("playpileUpdate", gamedata.playpile)
+            
+            // check if this was last play in turn
+            if(gamedata.playpile.hand.length == gamedata.playerCount) {
+              // check first if this was last play in set
+              var lastPlayInSet = false
+              if(gamedata.players[playerNumber].hand.hand.length == 0) {
+                lastPlayInSet = true
+              }
+
+              Object.keys(gamedata.playpile.hand).reverse().every(function(index) {
+                if(gamedata.playpile.hand[index].winning) {
+                  if(lastPlayInSet) {
+                    const winnerSocket = io.sockets.sockets.get(gamedata.players[gamedata.playpile.hand[index].playedBy].playerID)
+                    // send new hand status to player
+                    io.to(gamedata.gameID).emit("loser")
+                    winnerSocket.emit("winner")
+                  } else {
+                    gamedata.players[gamedata.playpile.hand[index].playedBy].turn = true
+                  }
+                  return false
+                }
+                return true
+              });
+              gamedata.playpile.hand = []
+              io.to(gamedata.gameID).emit("playpileUpdate", gamedata.playpile)
+            } else {
+              if (playerNumber+1 <= gamedata.playerCount-1) {
+                gamedata.players[playerNumber+1].turn = true
+              } else {
+                gamedata.players[0].turn = true
+              }
+            }
+            
+            gameStore.saveGame(gamedata.gameID, gamedata)
+          }
         }
-
       } else {
         console.log("no game in store")
       }
@@ -250,27 +285,19 @@ io.on('connection', (socket) => {
 // and getting the first one marked as winner 
 const checkKatkoMove = (playpile, hand, playedCard) => {
   // empty
-  if (playpile.length != 0) return [true, true]
+  if (playpile.length == 0) return [true, true]
   
   // compare to top card suit and value
-  const playpileTopcard = playpile.hand.slice(-1)
-  if ((playedCard.suit === playpileTopcard.suit) && (playedCard.value > playpileTopcard.value)) return [true, true]
-  if ((playedCard.suit === playpileTopcard.suit) && (playedCard.value < playpileTopcard.value)) return [true, false]
+  const playpileTopCard = playpile.slice(-1)[0]
+  if ((playedCard.suit === playpileTopCard.suit) && (playedCard.value > playpileTopCard.value)) return [true, true]
+  if ((playedCard.suit === playpileTopCard.suit) && (playedCard.value < playpileTopCard.value)) return [true, false]
   
   // check that player doesnt have same suit in hand
-  for (const card in hand) {
-    if (card !== playedCard && card.suit === playpileTopcard.suit)
+  for (const card of hand) {
+    if (card !== playedCard && card.suit === playpileTopCard.suit)
       return [false, false]
   }
   return [true, false]
-}
-
-const sendDeckUpdateToAll = (gamestate, room) => {
-  room.emit(gamestate.deck)
-}
-
-const sendPlayPileUpdateToAll = (gamestate, room) => {
-  room.emit(gamestate.playPile)
 }
 
 const getAllRooms = () => {
@@ -296,27 +323,11 @@ const getAllUsers = () => {
   return users
 }
 
-const parseRoomInfo = (room) => {
-  const [roomname, host] = room.split('?')
-  return roomname, host
-}
-
-const createRoomInfo = (roomname, host) => {
-  const room = roomname + "?" + host
-  return room
-}
-
 const getPlayerCountInRoom = (room) => {
   const players = io.sockets.adapter.rooms.get(room)
   const playerCount = players ? players.size : 0;
   return playerCount
 }
-
-const getPlayersInRoom = (room) => {
-  const players = io.sockets.adapter.rooms.get(room)
-  return players
-}
-
 
 // routes
 app.get('/api', (req, res) => {

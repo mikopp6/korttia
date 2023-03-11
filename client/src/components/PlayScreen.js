@@ -5,8 +5,10 @@ const PlayScreen = ({ socket, initialGameData }) => {
   const [ownHand, setOwnHand] = useState(null)
   const [deck, setDeck] = useState(null)
   const [playpile, setPlaypile] = useState(null)
+  const [status, setStatus]  = useState(null)
 
   const handleDeal = () => {
+    setStatus(null)
     socket.emit("dealGame", initialGameData.gameID)
   }
 
@@ -33,6 +35,31 @@ const PlayScreen = ({ socket, initialGameData }) => {
     })
   }, [socket])
 
+  useEffect(() => {
+    socket.on('notYourTurn', () => {
+      console.log("not my turn")
+    })
+  }, [socket])
+
+  useEffect(() => {
+    socket.on('invalidMove', () => {
+      console.log("invalid move")
+    })
+  }, [socket])
+
+  useEffect(() => {
+    socket.on('winner', () => {
+      setStatus("won!")
+      setOwnHand(null)
+    })
+  }, [socket])
+
+  useEffect(() => {
+    socket.on('loser', () => {
+      setStatus("lost!")
+      setOwnHand(null)
+    })
+  }, [socket])
 
 
   return (
@@ -54,6 +81,7 @@ const PlayScreen = ({ socket, initialGameData }) => {
           ))}
         </div>
       : <div>
+          {status && <p>You {status}</p>}
           <button onClick={handleDeal}>Deal</button>
           <p>waiting for cards to be dealt</p>
         </div>
