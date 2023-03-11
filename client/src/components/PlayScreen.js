@@ -75,10 +75,10 @@ const PlayScreen = ({ socket, initialGameData }) => {
       {ownHand
       ? <div>
           <p>Your cards: </p>
-          <div className='ownHand'>
+          <div className='own_hand'>
             {ownHand.hand.map((card) => (
-              <div key={card.fullvalue}>
-                <Card onClick={() => handleMove(card)} fullvalue={card.fullvalue} />
+              <div onClick={() => handleMove(card)} className='card_container' key={card.fullvalue}>
+                <Card fullvalue={card.fullvalue} />
               </div>
             ))}
           </div>

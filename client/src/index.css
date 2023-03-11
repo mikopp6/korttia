@@ -108,7 +108,7 @@ code {
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  background-color: #f9f5eb;
+  background-color: #87a1c7;
 }
 
 .leaveChat__btn {
@@ -185,7 +185,8 @@ code {
 
 .message__recipient {
   background-color: #f5ccc2;
-  width: 300px;
+  max-width: 300px;
+  overflow-wrap: break-word;
   padding: 10px;
   border-radius: 10px;
   font-size: 15px;
@@ -194,9 +195,9 @@ code {
 .message__sender {
   background-color: rgb(194, 243, 194);
   max-width: 300px;
+  overflow-wrap: break-word;
   padding: 10px;
   border-radius: 10px;
-  margin-left: auto;
   font-size: 15px;
 }
 
@@ -260,4 +261,30 @@ code {
 .row {
   display: flex;
   padding-left: 1%;
+}
+
+
+/* Card hand css */
+
+.own_hand {
+  display:flex;
+  max-width: 130px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.card_container {
+  overflow: visible;
+  width:1px;
+  flex-grow: 1;
+  
+}
+
+.card:hover {
+  transform: scale(78%);
+}
+  
+.card {
+  transform: scale(75%);
+  transition: 0.3s;
 }

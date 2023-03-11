@@ -9,7 +9,7 @@ const RoomList = ({ socket, room, setRoom }) => {
   const handleNewRoom = (e) => {
     e.preventDefault()
     if (newRoomName.trim() && localStorage.getItem('username')) {
-      socket.emit('createAndJoinRoom', newRoomName + '?' + localStorage.getItem('username'))
+      socket.emit('createAndJoinRoom', newRoomName + ' Host: ' + localStorage.getItem('username'))
     }
     setNewRoomName('')
   }

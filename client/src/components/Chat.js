@@ -73,42 +73,42 @@ const Chat = ({ username, socket, room, connected }) => {
             ))}
           </div>
           <div className="chat__main">
-          {room
-          ? <header className="chat__mainHeader">{room} chat</header>
-          : <header className="chat__mainHeader">Global chat</header>
-          }
-          <div className="message__container">
-            {messages.map((message) => 
-              message.name === localStorage.getItem('username') ? (
-                <div className="message__chats" key={message.id}>
-                  <p className="sender__name">You</p>
-                  <div className="message__sender">
-                    <p>{message.text}</p>
+            {room
+            ? <header className="chat__mainHeader">{room} chat</header>
+            : <header className="chat__mainHeader">Global chat</header>
+            }
+            <div className="message__container">
+              {messages.map((message) => 
+                message.name === localStorage.getItem('username') ? (
+                  <div className="message__chats" key={message.id}>
+                    <p className="sender__name">You</p>
+                    <div className="message__sender">
+                      <p>{message.text}</p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className='message__chats' key={message.id}>
-                  <p>{message.name}</p>
-                  <div className='message__recipient'>
-                    <p>{message.text}</p>
+                ) : (
+                  <div className='message__chats' key={message.id}>
+                    <p>{message.name}</p>
+                    <div className='message__recipient'>
+                      <p>{message.text}</p>
+                    </div>
                   </div>
-                </div>
-              )
-            )}
-            <div ref={lastMessageRef}/>
-          </div>
-          <div className="chat__footer">
-            <form className="form" onSubmit={handleSendMessage}>
-              <input
-                type="text"
-                placeholder="Write message"
-                className="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-              <button className="sendBtn">SEND</button>
-            </form>
-          </div>
+                )
+              )}
+              <div ref={lastMessageRef}/>
+            </div>
+            <div className="chat__footer">
+              <form className="form" onSubmit={handleSendMessage}>
+                <input
+                  type="text"
+                  placeholder="Write message"
+                  className="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <button className="sendBtn">SEND</button>
+              </form>
+            </div>
           </div>
         </div>
         :

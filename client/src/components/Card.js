@@ -61,7 +61,6 @@ import { ReactComponent as Spades_king } from '../assets/cards/fronts/spades_kin
 import { ReactComponent as Castle } from '../assets/cards/backs/castle.svg'
 
 const cards = {
-  c1: Clubs_ace,
   c2: Clubs_2,
   c3: Clubs_3,
   c4: Clubs_4,
@@ -74,7 +73,7 @@ const cards = {
   c11: Clubs_jack,
   c12: Clubs_queen,
   c13: Clubs_king,
-  d1: Diamonds_ace,
+  c14: Clubs_ace,
   d2: Diamonds_2,
   d3: Diamonds_3,
   d4: Diamonds_4,
@@ -87,7 +86,7 @@ const cards = {
   d11: Diamonds_jack,
   d12: Diamonds_queen,
   d13: Diamonds_king,
-  h1: Hearts_ace,
+  d14: Diamonds_ace,
   h2: Hearts_2,
   h3: Hearts_3,
   h4: Hearts_4,
@@ -100,7 +99,7 @@ const cards = {
   h11: Hearts_jack,
   h12: Hearts_queen,
   h13: Hearts_king,
-  s1: Spades_ace,
+  h14: Hearts_ace,
   s2: Spades_2,
   s3: Spades_3,
   s4: Spades_4,
@@ -113,6 +112,7 @@ const cards = {
   s11: Spades_jack,
   s12: Spades_queen,
   s13: Spades_king,
+  s14: Spades_ace,
   castle: Castle
 }
 
@@ -121,8 +121,11 @@ const Card = (props) => {
   if(props.fullvalue.length !== 0) {
     PlayingCard = cards[props.fullvalue]
   }
+
   return (
-    <PlayingCard />
+    <div>
+      {PlayingCard && <PlayingCard className="card" /> }
+    </div>
   )
 }
 

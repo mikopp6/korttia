@@ -27,13 +27,13 @@ const RoomLobby = ({ socket, room, setRoom }) => {
 
   return (
     <div>
-      <h1>In room {room}</h1>
+      <h2>In room {room}</h2>
       {gameStarted
       ? <div>
           <PlayScreen socket={socket} initialGameData={initialGameData}/>
         </div>
       : <div>
-          <h2>Waiting for game to start</h2>
+          <h3>Waiting for game to start</h3>
           <button onClick={handleGameStart}>Start game</button>
         </div>
       }
