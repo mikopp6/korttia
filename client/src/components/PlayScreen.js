@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
+import Card from './Card'
+
 const PlayScreen = ({ socket, initialGameData }) => {
   
   const [ownHand, setOwnHand] = useState(null)
@@ -73,12 +75,13 @@ const PlayScreen = ({ socket, initialGameData }) => {
       {ownHand
       ? <div>
           <p>Your cards: </p>
-          {ownHand.hand.map((card) => (
-            <div key={card.fullvalue}>
-              <p>{card.fullvalue}</p>
-              <button onClick={() => handleMove(card)}>play</button>
-            </div>
-          ))}
+          <div className='ownHand'>
+            {ownHand.hand.map((card) => (
+              <div key={card.fullvalue}>
+                <Card onClick={() => handleMove(card)} fullvalue={card.fullvalue} />
+              </div>
+            ))}
+          </div>
         </div>
       : <div>
           {status && <p>You {status}</p>}
@@ -91,7 +94,7 @@ const PlayScreen = ({ socket, initialGameData }) => {
           <p>Playpile: </p>
           {playpile.hand.map((card) => (
             <div key={card.fullvalue}>
-              <p>{card.fullvalue}</p>  
+              <Card fullvalue={card.fullvalue} />  
             </div>
           ))}
         </div>

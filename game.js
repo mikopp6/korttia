@@ -2,7 +2,7 @@ class Card {
   constructor(value, suit) {
     this.value = value
     this.suit = suit
-    this.fullvalue = value+suit
+    this.fullvalue = suit+value
     this.hidden = true
   }
 }

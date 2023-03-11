@@ -21,6 +21,13 @@ code {
   font-family: 'Poppins', sans-serif;
 }
 
+.own_hand {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+}
+
 .home__container {
   width: 100%;
   height: 40vh;
