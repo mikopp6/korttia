@@ -16,7 +16,6 @@ const Chat = ({ username, socket, room, connected, notify }) => {
 
   const handleSendMessage = (e) => {
     e.preventDefault()
-    notify(message)
     if (message.trim() && localStorage.getItem('username')) {
       socket.emit('message', {
         text: message,

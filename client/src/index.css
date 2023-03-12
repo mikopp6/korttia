@@ -42,9 +42,9 @@
   order: 2;
   flex: 1 1 80%;
   align-self: auto;
-  background-color: #CCCCCC;
+  background-color: #C5C6C7;
   color: #000000;
-  border: 2px solid #6D6D6D;
+  border: 2px solid #1F2833;
   border-radius: 10px;
   padding: 5px;
   margin: 5px;
@@ -92,7 +92,7 @@
 
 .generic_input {
   padding: 10px;
-  width: 50%;
+  width: 25%;
 }
 
 .create_room_container {
@@ -117,7 +117,7 @@
   padding: 10px;
   font-size: 16px;
   cursor: pointer;
-  background-color: #607eaa;
+  background-color: #45A29E;
   color: #f9f5eb;
   outline: none;
   border: none;
@@ -131,9 +131,9 @@
   flex: 1 1 80%;
   flex-direction: column;
   align-self: auto;
-  background-color: #CCCCCC;
+  background-color: #C5C6C7;
   color: #000000;
-  border: 2px solid #6D6D6D;
+  border: 2px solid #1F2833;
   border-radius: 10px;
   padding: 5px;
   margin: 5px;
@@ -154,11 +154,11 @@
 .chat_container {
   display: flex;
   order: 2;
-  flex: 1 1 20%;
+  flex: 1 1 10%;
   align-self: auto;
-  background-color: #CCCCCC;
+  background-color: #C5C6C7;
   color: #000000;
-  border: 2px solid #6D6D6D;
+  border: 2px solid #1F2833;
   border-radius: 10px;
   padding: 5px;
   margin: 5px;
@@ -169,14 +169,13 @@
 }
 
 .chat_users > * {
-  color: #607eaa;
+  color: #45A29E;
   font-size: 16px;
   margin-bottom: 5px;
 }
 
 .chat_main {
   height: 100%;
-  flex: 0.8;
 }
 
 .chat_mainHeader {
@@ -185,8 +184,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px;
-  background-color: #87a1c7;
+  padding-bottom: 15px;
+  padding-top: 10px;
+  background-color: #C5C6C7;
 }
 
 .chat__sidebar {
@@ -195,23 +195,6 @@
   flex: 0.2;
   padding: 20px;
   border-right: 1px solid #fdfdfd;
-}
-
-.online__users > * {
-  margin-bottom: 10px;
-  color: rgb(238, 102, 102);
-  font-style: italic;
-}
-
-
-.leaveChat__btn {
-  padding: 10px;
-  width: 150px;
-  border: none;
-  outline: none;
-  background-color: #d1512d;
-  cursor: pointer;
-  color: #eae3d2;
 }
 
 .message_container {
@@ -228,10 +211,6 @@
 
 .message_chats > p {
   font-size: 13px;
-}
-
-.sender__name {
-  text-align: right;
 }
 
 .message_sender {
@@ -254,8 +233,7 @@
 
 .chat_footer {
   padding: 10px;
-  background-color: #f9f5eb;
-  height: 10vh;
+  background-color: #C5C6C7;
 }
 
 .form {
