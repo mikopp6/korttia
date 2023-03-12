@@ -116,6 +116,13 @@ const cards = {
   castle: Castle
 }
 
+/* Card, react component
+*  params: fullvalue
+*  returns: Card svg
+*
+*  Used to get the svg card image
+*/
+
 const Card = (props) => {
   let PlayingCard = cards['castle']
   if(props.fullvalue.length !== 0) {

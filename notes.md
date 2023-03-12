@@ -1,6 +1,6 @@
 todo:
 - ~~create rooms~~
-- basic game logic
+- ~~basic game logic~~
 - confirm message received
 - advanced game logic
 - testing

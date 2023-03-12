@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from 'react'
 
 import PlayScreen from './PlayScreen'
-const RoomLobby = ({ socket, room, setRoom }) => {
+
+/* RoomLobby, react component
+*  params: socket, room, setRoom
+*  returns: html
+*
+*  Used as top level react component for the RoomLobby view.
+*  If game has started, return PlayScreen
+*  If not, returns button to start game & related options
+*/
+const RoomLobby = ({ socket, room, setRoom, notify }) => {
 
   const [gameStarted, setGameStarted] = useState(false)
   const [initialGameData, setInitialGameData] = useState()
@@ -14,30 +23,34 @@ const RoomLobby = ({ socket, room, setRoom }) => {
   }
 
   const handleGameStart = () => {
-    const data = {"room": room, "game": "katko"}
+    const data = { "room": room, "game": "katko" }
     socket.emit("startGame", data)
   }
 
+  // Receives response to start game, initiating the game
   useEffect(() => {
     socket.on('startGameResponse', (data) => {
       setGameStarted(true)
       setInitialGameData(data)
+      notify("Game started!")
     })
-  }, [socket])
+  }, [socket, notify])
 
   return (
     <div>
       <h2>In room {room}</h2>
       {gameStarted
-      ? <div>
-          <PlayScreen socket={socket} initialGameData={initialGameData}/>
+        ?
+        <div>
+          <PlayScreen socket={socket} initialGameData={initialGameData} notify={notify} />
         </div>
-      : <div>
+        :
+        <div>
           <h3>Waiting for game to start</h3>
-          <button onClick={handleGameStart}>Start game</button>
+          <button className='generic_button' onClick={handleGameStart}>Start game</button>
         </div>
       }
-      <button onClick={handleLeave}>Leave room</button>
+      <button className='generic_button' onClick={handleLeave}>Leave room</button>
     </div>
   )
 }

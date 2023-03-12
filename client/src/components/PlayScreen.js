@@ -2,12 +2,21 @@ import React, { useEffect, useState } from 'react'
 
 import Card from './Card'
 
-const PlayScreen = ({ socket, initialGameData }) => {
-  
+
+/* PlayScreen, react component
+*  params: socket, initialGameData
+*  returns: html
+*
+*  Used as top level react component for the PlayScreen view.
+*  Shows game information
+*/
+
+const PlayScreen = ({ socket, initialGameData, notify }) => {
+
   const [ownHand, setOwnHand] = useState(null)
   const [deck, setDeck] = useState(null)
   const [playpile, setPlaypile] = useState(null)
-  const [status, setStatus]  = useState(null)
+  const [status, setStatus] = useState(null)
 
   const handleDeal = () => {
     setStatus(null)
@@ -15,65 +24,74 @@ const PlayScreen = ({ socket, initialGameData }) => {
   }
 
   const handleMove = (card) => {
-    const data = {playedCard: card, gameID: initialGameData.gameID}
+    const data = { playedCard: card, gameID: initialGameData.gameID }
     socket.emit("onMove", data)
   }
 
+  // Receives updates on own hand
   useEffect(() => {
     socket.on('ownHandUpdate', (data) => {
       setOwnHand(data)
     })
   }, [socket])
 
+  // Receives updates on deck
   useEffect(() => {
     socket.on('deckUpdate', (data) => {
       setDeck(data)
     })
   }, [socket])
 
+  // Receives updates on playpile
   useEffect(() => {
     socket.on('playpileUpdate', (data) => {
       setPlaypile(data)
     })
   }, [socket])
 
+  // Receives response if user plays out of turn
   useEffect(() => {
     socket.on('notYourTurn', () => {
-      console.log("not my turn")
+      notify("Not my turn!")
     })
-  }, [socket])
+  }, [socket, notify])
 
+  // Receives response if user plays invalid move
   useEffect(() => {
     socket.on('invalidMove', () => {
-      console.log("invalid move")
+      notify("Invalid move!")
     })
-  }, [socket])
+  }, [socket, notify])
 
+  // Receives updates if user won
   useEffect(() => {
     socket.on('winner', () => {
       setStatus("won!")
       setOwnHand(null)
+      notify("I won :)")
     })
-  }, [socket])
+  }, [socket, notify])
 
+  // Receives updates if user lost
   useEffect(() => {
     socket.on('loser', () => {
       setStatus("lost!")
       setOwnHand(null)
+      notify("I lost :(")
     })
-  }, [socket])
-
+  }, [socket, notify])
 
   return (
     <div>
       <p>Game: {initialGameData.gameType}</p>
       <p>Players: {initialGameData.playerCount}</p>
       {deck
-      ? <p>Deck: {deck.deck.length}</p>
-      : <p>Deck: {initialGameData.deck.deck.length}</p>
+        ? <p>Deck: {deck.deck.length}</p>
+        : <p>Deck: {initialGameData.deck.deck.length}</p>
       }
       {ownHand
-      ? <div>
+        ?
+        <div>
           <p>Your cards: </p>
           <div className='own_hand'>
             {ownHand.hand.map((card) => (
@@ -83,23 +101,26 @@ const PlayScreen = ({ socket, initialGameData }) => {
             ))}
           </div>
         </div>
-      : <div>
+        :
+        <div>
           {status && <p>You {status}</p>}
-          <button onClick={handleDeal}>Deal</button>
-          <p>waiting for cards to be dealt</p>
+          <button className='generic_button' onClick={handleDeal}>Deal</button>
+          <p>Waiting for cards to be dealt</p>
         </div>
       }
       {playpile
-      ? <div>
+        ?
+        <div>
           <p>Playpile: </p>
           {playpile.hand.map((card) => (
             <div key={card.fullvalue}>
-              <Card fullvalue={card.fullvalue} />  
+              <Card fullvalue={card.fullvalue} />
             </div>
           ))}
         </div>
-      : <div>
-          <p>no cards in playpile</p>
+        :
+        <div>
+          <p>No cards in playpile</p>
         </div>
       }
     </div>
