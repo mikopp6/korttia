@@ -4,23 +4,20 @@ const app = express()
 const http = require('http').Server(app)
 const cors = require('cors')
 const io = require('socket.io')(http, {cors: {origin: "http://localhost:3000"}})
-
-const PORT = 4000
-
-app.use(cors())
-const crypto = require("crypto");
-const randomId = () => crypto.randomBytes(8).toString("hex");
-
 const { InMemorySessionStore } = require("./sessionStore")
-const sessionStore = new InMemorySessionStore()
-
-
 const { InMemoryGameStore } = require("./gameStore")
+const { Card, Deck, Hand } = require("./game")
+const crypto = require("crypto");
+
+
+// init
+app.use(cors())
+const PORT = 4000
+const randomId = () => crypto.randomBytes(8).toString("hex");
+const sessionStore = new InMemorySessionStore()
 const gameStore = new InMemoryGameStore()
 
-
-const { Card, Deck, Hand } = require("./game")
-
+// middleware for persistent session
 io.use((socket, next) => {
   // check for existing session
   const sessionID = socket.handshake.auth.sessionID
@@ -47,27 +44,29 @@ io.use((socket, next) => {
   next()
 })
 
+// main connection point for socket.io
 io.on('connection', (socket) => {
+  // saves user session
   sessionStore.saveSession(socket.sessionID, {
     userID: socket.userID,
     username: socket.username,
     connected: true
   })
 
+  // informs user of session
   socket.emit("session", {
     sessionID: socket.sessionID,
     userID: socket.userID
   })
 
+  // inform user of all users and rooms
   const users = getAllUsers()
   socket.emit('users', users)
   const rooms = getAllRooms()
   socket.emit('rooms', rooms)
-
-
-
   socket.broadcast.emit("users", users)
 
+  // receives message from user, either global or in a room
   socket.on('message', (data) => {
     if (data.room)
     {
@@ -80,27 +79,32 @@ io.on('connection', (socket) => {
     }
   })
 
+  // sends rooms to user
   socket.on('listrooms', (_data) => {
     socket.emit('rooms', getAllRooms())
   })
 
+  // creates and joins room based on data sent by user
   socket.on('createAndJoinRoom', (data) => {
     socket.join(data)
     socket.emit('joinRoomResponse', data)
     socket.broadcast.emit("rooms", getAllRooms())
   })
 
+  // joins room based on data sent by user
   socket.on('joinRoom', (data) => {
     socket.join(data)
     socket.emit('joinRoomResponse', data)
     socket.broadcast.emit("rooms", getAllRooms())
   })
 
+  // leaves room based on data sent by user
   socket.on('leaveRoom', (data) => {
     socket.leave(data)
     socket.emit('rooms', getAllRooms())
   })
 
+  // gets called on disconnect, saves session to store
   socket.on("disconnect", async () => {
     const matchingSockets = await io.in(socket.userID).allSockets()
     const isDisconnected = matchingSockets.size === 0
@@ -117,10 +121,7 @@ io.on('connection', (socket) => {
   })
 
   // !!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!
-  // game logic stuff
-  // !!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!
+  // game logic stuff starts here
 
   // Get room info & start game
   socket.on("startGame", (data) => {
@@ -131,39 +132,33 @@ io.on('connection', (socket) => {
     const playerCount = players ? players.size : 0;
     const deck = new Deck
     const playpile = new Hand
-
     const playerList = []
-    for (const playerID of players)
-    {
-      playerList.push({
-        playerID: playerID,
-        wins: 0
-      })
-    }
 
-    const gameData = {
-      gameID: gameID,
-      gameType: gameType,
-      players: playerList,
-      playerCount: playerCount,
-      deck: deck,
-      playpile: playpile
+    if(!players) {
+      console.log("No players in room")
+    } else {
+      for (const playerID of players)
+      {
+        playerList.push({
+          playerID: playerID,
+          wins: 0
+        })
+      }
+      
+      const gameData = {
+        gameID: gameID,
+        gameType: gameType,
+        players: playerList,
+        playerCount: playerCount,
+        deck: deck,
+        playpile: playpile
+      }
+      gameStore.saveGame(gameID, gameData)
+      io.to(data.room).emit("startGameResponse", gameData)
     }
-    gameStore.saveGame(gameID, gameData)
-    
-    // TODO Remove values before sending
-    // for(const card in gameData.deck.deck)
-    // {
-    //   console.log(card.value)
-    //   card.value = null
-    //   card.suit = null
-    //   card.fullvalue = null
-    // }
-
-    io.to(data.room).emit("startGameResponse", gameData)
   })
 
-  // deal
+  // deal hands
   socket.on("dealGame", (gameID) => {
     // check that game exists
     if (gameID) {
@@ -194,7 +189,6 @@ io.on('connection', (socket) => {
       console.log("no gameID")
     }
   })
-
 
   // receive move
   socket.on("onMove", (data) => {
@@ -300,6 +294,7 @@ const checkKatkoMove = (playpile, hand, playedCard) => {
   return [true, false]
 }
 
+// return all room currently connected to server
 const getAllRooms = () => {
   const rooms = []
   io.of("/").adapter.rooms.forEach((sockets, room) => {
@@ -312,6 +307,7 @@ const getAllRooms = () => {
   return rooms
 }
 
+// return all users currently connected to server
 const getAllUsers = () => {
   const users = []
   for(let [id, socket] of io.of('/').sockets) {
@@ -323,6 +319,7 @@ const getAllUsers = () => {
   return users
 }
 
+// returns playercount in param room
 const getPlayerCountInRoom = (room) => {
   const players = io.sockets.adapter.rooms.get(room)
   const playerCount = players ? players.size : 0;
@@ -334,7 +331,7 @@ app.get('/api', (req, res) => {
   res.json({message: "api endpoint"})
 })
 
-
+// start listening on PORT
 http.listen(PORT, () => {
   // console.log(`Listening on http://127.0.0.1:${PORT}`)
 })

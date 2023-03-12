@@ -128,9 +128,8 @@ const cards = {
 
 const Card = (props) => {
   let PlayingCard = cards['castle']
-  console.log(props.fullvalue)
 
-  if(props.fullvalue !== "empty") {
+  if(props.fullvalue && props.fullvalue !== "empty") {
     PlayingCard = cards[props.fullvalue]
   }
 

@@ -89,20 +89,24 @@ const PlayScreen = ({ socket, initialGameData, notify }) => {
           ? <p>Deck: {deck.deck.length}</p>
           : <p>Deck: {initialGameData.deck.deck.length}</p>
         }
-        {playpile.hand.length !== 0
+        {playpile
           ?
           <div>
             <p>Playpile: {playpile.hand.length}</p>
-            {playpile.hand.map((card) => (
-              <div key={card.fullvalue}>
-                <Card fullvalue={card.fullvalue} />
-              </div>
-            ))}
+            {playpile.hand.length === 0
+              ? <Card fullvalue={"blank"} />
+              :
+              <>{playpile.hand.map((card) => (
+                <div key={card.fullvalue}>
+                  <Card fullvalue={card.fullvalue} />
+                </div>
+              ))}</>
+            }
           </div>
           :
           <div className='generic_hand_container'>
-            <p>Playpile: {playpile.hand.length}</p>
-            <Card fullvalue={"blank"}/>
+            <p>Playpile: 0</p>
+            <Card />
           </div>
         }
       </div>
