@@ -10,7 +10,6 @@ import Card from './Card'
 *  Used as top level react component for the PlayScreen view.
 *  Shows game information
 */
-
 const PlayScreen = ({ socket, initialGameData, notify }) => {
 
   const [ownHand, setOwnHand] = useState(null)
@@ -85,13 +84,31 @@ const PlayScreen = ({ socket, initialGameData, notify }) => {
     <div>
       <p>Game: {initialGameData.gameType}</p>
       <p>Players: {initialGameData.playerCount}</p>
-      {deck
-        ? <p>Deck: {deck.deck.length}</p>
-        : <p>Deck: {initialGameData.deck.deck.length}</p>
-      }
+      <div>
+        {deck
+          ? <p>Deck: {deck.deck.length}</p>
+          : <p>Deck: {initialGameData.deck.deck.length}</p>
+        }
+        {playpile.hand.length !== 0
+          ?
+          <div>
+            <p>Playpile: {playpile.hand.length}</p>
+            {playpile.hand.map((card) => (
+              <div key={card.fullvalue}>
+                <Card fullvalue={card.fullvalue} />
+              </div>
+            ))}
+          </div>
+          :
+          <div className='generic_hand_container'>
+            <p>Playpile: {playpile.hand.length}</p>
+            <Card fullvalue={"blank"}/>
+          </div>
+        }
+      </div>
       {ownHand
         ?
-        <div>
+        <div className='generic_hand_container'>
           <p>Your cards: </p>
           <div className='own_hand'>
             {ownHand.hand.map((card) => (
@@ -108,21 +125,7 @@ const PlayScreen = ({ socket, initialGameData, notify }) => {
           <p>Waiting for cards to be dealt</p>
         </div>
       }
-      {playpile
-        ?
-        <div>
-          <p>Playpile: </p>
-          {playpile.hand.map((card) => (
-            <div key={card.fullvalue}>
-              <Card fullvalue={card.fullvalue} />
-            </div>
-          ))}
-        </div>
-        :
-        <div>
-          <p>No cards in playpile</p>
-        </div>
-      }
+      
     </div>
   )
 }

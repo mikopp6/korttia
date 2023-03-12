@@ -59,6 +59,8 @@ import { ReactComponent as Spades_queen } from '../assets/cards/fronts/spades_qu
 import { ReactComponent as Spades_king } from '../assets/cards/fronts/spades_king.svg'
 
 import { ReactComponent as Castle } from '../assets/cards/backs/castle.svg'
+import { ReactComponent as Blank } from '../assets/cards/backs/blank_card.svg'
+
 
 const cards = {
   c2: Clubs_2,
@@ -113,7 +115,8 @@ const cards = {
   s12: Spades_queen,
   s13: Spades_king,
   s14: Spades_ace,
-  castle: Castle
+  castle: Castle,
+  blank: Blank
 }
 
 /* Card, react component
@@ -125,7 +128,9 @@ const cards = {
 
 const Card = (props) => {
   let PlayingCard = cards['castle']
-  if(props.fullvalue.length !== 0) {
+  console.log(props.fullvalue)
+
+  if(props.fullvalue !== "empty") {
     PlayingCard = cards[props.fullvalue]
   }
 
